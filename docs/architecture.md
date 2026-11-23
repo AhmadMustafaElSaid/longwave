@@ -1,5 +1,7 @@
 # Architecture and recovery contract
 
+The optional phone interface runs a loopback HTTP server with an explicit private HTTPS origin for remote access. Pairing grants one expiring browser session. Commands use the same service and SQLite queue as the extension. Audio responses support byte ranges and 128 KiB reads. On Unix a running job inherits the supervisor's file lock to prevent concurrent writes after an unexpected supervisor exit.
+
 ## Components
 
 The Chromium extension uses plain TypeScript and native DOM controls. A framework is unnecessary for one form and a local queue. Browser-specific calls live in the background adapter. There is no content script, web-request interception, persistent page scraping, or hosted backend.

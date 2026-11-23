@@ -21,6 +21,6 @@ https://github.com/GyanD/codexffmpeg/releases/tag/9.1
 https://www.gyan.dev/ffmpeg/builds/
 https://ffmpeg.org/legal.html
 
-The setup executable is currently unsigned. Checksums detect accidental
-changes relative to a trusted manifest; they are not an Authenticode identity.
-Do not disable Windows security protections to install this package.
+The release manifest records the Authenticode signing status. Release assets
+include SHA-256 digests. See the repository installation guide for provenance
+verification. Keep your operating system protections enabled.

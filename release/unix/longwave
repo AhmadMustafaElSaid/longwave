@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+directory=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+exec "${LONGWAVE_PYTHON:-python3}" "$directory/manage.py" "$@"

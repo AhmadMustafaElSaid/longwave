@@ -1,6 +1,6 @@
 {
   "name": "longwave",
-  "version": "0.2.0-rc.1",
+  "version": "0.3.0",
   "private": true,
   "description": "A local-first SoundCloud audio download manager for long listening.",
   "type": "module",
@@ -12,6 +12,7 @@
     "check": "tsc --noEmit",
     "test": "node scripts/run-tests.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
+    "test:phone": "node scripts/test_phone_browser.mjs",
     "preview": "node scripts/preview.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

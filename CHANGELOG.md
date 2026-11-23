@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 — public multi-platform release
+
+- Package the companion for Windows x64, Debian/Ubuntu and macOS, plus a portable Unix archive. Include per-user Chrome, Edge and Chromium native-host registration on Unix.
+- Pair a phone over private HTTPS, submit downloads, seek through completed audio, change playback speed and save a local copy.
+- Exercise three operating systems, Windows native messaging, mobile Chromium/WebKit browser flows and generated 4-, 7- and 10-hour transfers in the release pipeline.
+- Add SHA-256 checksums and GitHub-signed build provenance to published releases, with optional Windows publisher signing and macOS signing/notarization support for enrolled identities.
+
 ## 0.2.0-rc.1 — standalone Windows release candidate
 
 - Ship a self-contained Windows x64 setup package with CPython 3.14.10 and pinned yt-dlp source. End users need no developer environment.

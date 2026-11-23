@@ -1,6 +1,6 @@
 # Store submission material
 
-This is a prepared submission draft, not a published listing. Publisher account, repository URL, support contact, privacy URL, store IDs, installer signing, and review remain required.
+Prepared for publisher submission. [Public source and releases](https://github.com/AhmadMustafaElSaid/longwave) · [Support](https://github.com/AhmadMustafaElSaid/longwave/issues) · [Privacy policy](https://github.com/AhmadMustafaElSaid/longwave/blob/main/PRIVACY.md). Publisher accounts, store IDs, publisher credentials and review remain pending.
 
 ## Name
 
@@ -20,7 +20,7 @@ Longwave saves supported public audio to your computer for offline listening in 
 - No application-imposed duration limit; available disk space and source conditions apply.
 - No account integration, telemetry, or remote audio conversion service.
 
-Requires the separately installed Longwave companion for Windows 10/11 x64. A supported full-length unencrypted public stream must be available. A native download button is not required. Changed/expired stream URLs can require a fresh download. No playlists, mobile support, DRM bypass, paid-access bypass, private-session extraction, or geographic circumvention.
+Requires the separately installed desktop companion for Windows x64, macOS or Linux. A full-length unencrypted public stream must be available. The native download button is optional. Expired stream URLs can require a fresh download. Users can optionally enable a paired phone web interface. Playlists, protected audio and private sessions are unsupported.
 
 Save only audio you own or have permission to retain. Respect copyright, licenses, and platform terms. Public playback availability does not establish download permission. Longwave is not affiliated with SoundCloud.
 

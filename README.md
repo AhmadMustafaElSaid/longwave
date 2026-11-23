@@ -1,159 +1,84 @@
 # Longwave
 
-**Long listens. Local files.** An open-source SoundCloud browser extension with a local companion for saving public audio, including playable tracks without a native download button.
+Save a permitted SoundCloud track for offline listening in your own player. Longwave handles long recordings on your computer, keeps the available audio format or exports MP3, and continues working when you close the browser.
 
-[دليل التشغيل بالعربية](docs/quickstart-ar.md)
+**[Download Longwave](https://github.com/AhmadMustafaElSaid/longwave/releases/latest)** · [Installation](docs/install.md) · [دليل الاستخدام بالعربية](docs/quickstart-ar.md) · [Builds and tests](https://github.com/AhmadMustafaElSaid/longwave/actions/workflows/release.yml)
 
-Longwave keeps media processing on your computer. It downloads supported full-length streams, preserves the available source audio by default, and optionally converts to MP3 for external players.
+![Longwave downloads workspace](docs/images/dashboard.png)
 
-**Status: 0.2.0 release candidate for Windows 10/11 x64.** A standalone setup package can be built and shared; users do not need Python, Node.js, or a source checkout. It uses unpacked browser installation. Publisher signing, store publication, and broader clean-machine validation remain release work. There is no application-imposed duration limit; source availability, disk space, and network conditions still apply.
+## Choose your device
 
-![Longwave desktop workspace](docs/images/dashboard.png)
+| Device                            | Install or connect                                                                                                                                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows 10/11 x64                 | Extract the Windows ZIP and run **Longwave-Setup.exe**. Setup includes Python and fetches checksum-verified FFmpeg tools.                                                                                |
+| Debian / Ubuntu with Python 3.11+ | Install the `.deb` with APT and run `longwave connect`.                                                                                                                                                  |
+| macOS or other Linux desktops     | Install Python 3.11+ and FFmpeg, extract the Unix archive to a permanent folder, then run `./longwave connect`. macOS also has an installer package.                                                     |
+| Android / iPhone                  | Open your computer’s paired web interface over a private HTTPS connection. Queue a track, play it at up to 2× or save it on the phone. The computer must be running until the file has been transferred. |
 
-## What works
+On a desktop, open `chrome://extensions` or `edge://extensions`, enable **Developer mode** and choose **Load unpacked**. Select the **extension** directory shown by the companion. The public distribution channel is GitHub Releases. Installation currently requires these manual browser steps. [Installation, verification and phone pairing](docs/install.md)
 
-- Popup and full downloads workspace, with English and Arabic/RTL interfaces.
-- Full SoundCloud track links and `on.soundcloud.com` share links. Pasting the whole sharing message extracts its link.
-- Public, unencrypted full audio streams; the native download flag is not required.
-- A local queue with persistent state, progress, pause/resume, retry, cancellation, and output-folder reveal.
-- A detached companion that continues after the extension page or browser closes.
-- Source-format audio, or optional MP3 conversion. No whole-track PCM decoding in the browser.
-- Conservative source validation before reusing partial downloads. Changed/expired signed links can require a restart.
-- Output audio-stream and duration checks before atomic finalization.
-- No telemetry, account integration, browser-cookie extraction, remote conversion service, or broad page permissions.
+## Saving audio without a download button
 
-Source audio is the stream SoundCloud makes available, not necessarily the creator's uploaded master. Converting a lower-bitrate stream to MP3 cannot restore missing quality. Playback speed remains a feature of your local player; choose 2× there without changing the saved audio.
+Paste the SoundCloud track URL or the entire share message into Longwave. Choose **Source audio** to preserve the available stream, or **MP3** for players that require it. A full-length, publicly playable, unencrypted rendition can work when the creator’s download button is absent. Previews, private sessions, subscription-only audio and protected streams are unsupported.
 
-## Install the standalone candidate (Windows)
+Public playback and permission to retain a copy are separate. Save recordings you own or have permission to keep, and respect the license and platform terms. Longwave is independent of SoundCloud. [SoundCloud terms](https://soundcloud.com/terms-of-use)
 
-Extract `longwave-0.2.0-rc.1-windows-x64.zip` completely and open **Longwave-Setup.exe**. Choose an audio folder and install. Setup includes its own runtime, downloads checksum-verified media tools, and registers the companion for your account without administrator privileges.
+## Long recordings
 
-Open **START-HERE.html** from the package. The candidate uses **Developer mode → Load unpacked**; the extension folder is in the installed version under `%LOCALAPPDATA%/Longwave/versions`. Keep that installed folder in place. Setup supports repair/update, rollback to the previous version, and disconnection that preserves audio/history.
+The queue and partial files live on disk. The native companion runs one job at a time with up to three HLS fragment requests. The browser receives small progress messages. It never buffers a complete track. A closed popup or an MV3 service-worker restart does not interrupt a running job.
 
-This candidate is unsigned and is not published to browser stores. A public download URL will exist after the generated assets are uploaded to a repository release. Store-upload packaging is prepared separately and requires real store IDs. See [distribution details](docs/distribution.md).
+- Pause, resume or retry from the bilingual workspace. Resuming a validated unchanged source reuses partial progress. A changed playlist or expiring signed source can require a fresh transfer.
+- Before exposing a file, the companion verifies the audio stream and duration with ffprobe, then renames the completed output. Audio quality is limited by the available rendition.
+- Playback speed is a player setting. Select 2× in your external player or in the paired phone player. The saved file retains its original speed.
+- Storage, source availability and network stability determine practical limits. Source, output and previous interrupted attempts can coexist. After a reboot, open Longwave to restart the worker. The queue accepts 20 unfinished jobs and shows up to 100 items.
 
-See [candidate verification](docs/release-verification.md) for standalone-package and Chrome/Edge results, and [CHANGELOG.md](CHANGELOG.md) for changes.
+The original live check saved one 7 h 35 min public track whose native download flag was off. Generated 4-, 7- and 10-hour progressive transfers exercise the full job on every release, including duration validation and decoding near the start, middle and end. The Linux report accompanies each release. [Live and generated test evidence](docs/verification.md)
 
-## Develop from source (Windows)
+## Architecture
 
-Prerequisites: Node.js 22+, npm, Python 3.11+, and Chrome or Edge. Python 3.15 and Edge 158 were used for the local checks. The installer registers a per-user native host; it does not require administrator access.
+| Component                           | Responsibility                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `extension/`                        | Manifest V3 popup and workspace, typed native messages, English and Arabic RTL.                   |
+| `companion/longwave/`               | SoundCloud resolution, source eligibility, SQLite journal, worker, FFmpeg and ffprobe.            |
+| `companion/longwave/phone.py`       | Optional loopback server, one-device pairing, streaming downloads and HTTP ranges for seeking.    |
+| `release/`                          | Windows setup and executable host, Unix registration, pinned runtime and extractor inputs.        |
+| `scripts/` and `.github/workflows/` | Package builds, isolated installs, browser checks, endurance cases and signed release provenance. |
 
-Run these commands from the project directory in PowerShell:
+The extension requests native messaging, local preference storage and gesture-scoped access to the current tab. Phone access is off until the user starts it. [Architecture](docs/architecture.md) · [Privacy](PRIVACY.md)
+
+## Build and test
+
+Use Node.js 22+ and Python 3.11+. On Windows, use PowerShell from the checkout.
 
 ```powershell
 npm ci
 npm run setup:media
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --require-hashes -r companion\requirements.txt
+npm run verify
+npm run release:windows
+npm run test:release
+python scripts/test_release_browser.py
+```
+
+On macOS or Linux, install Python and FFmpeg, then use a virtual environment.
+
+```sh
+npm ci
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --require-hashes -r companion/requirements.txt
+export LONGWAVE_TEST_FFMPEG="$(command -v ffmpeg)" LONGWAVE_TEST_FFPROBE="$(command -v ffprobe)"
 npm run build
-.\.venv\Scripts\python.exe scripts\install_companion.py
+python scripts/test_suite.py
+python scripts/package_unix.py
+python scripts/test_unix_package.py
 ```
 
-`setup:media` downloads the pinned matching FFmpeg/ffprobe build used by the standalone installer. Downloads need network access and may take several minutes. Archive checksums and executable versions are checked. See [troubleshooting](docs/troubleshooting.md).
+For Debian packaging add `--deb` to the package command. Build the optional native macOS installer with `python scripts/package_macos.py`. `npm run preview` starts a simulated interface for design work. The stricter release test command fails if any media tests are skipped. Mobile browser checks use Playwright Chromium or WebKit. [Release workflow](.github/workflows/release.yml) · [Release operations](docs/distribution.md)
 
-Then:
+## Project
 
-1. Open `edge://extensions` or `chrome://extensions`.
-2. Enable Developer mode, choose **Load unpacked**, and select `dist/chromium`.
-3. Open Longwave from the extensions toolbar. Its status should say **Connected**.
-4. Paste a SoundCloud link, choose Source audio or MP3, and download.
+[Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Security reports](SECURITY.md) · [Support](https://github.com/AhmadMustafaElSaid/longwave/issues) · [Roadmap](docs/roadmap.md)
 
-The default output is `~/Downloads/Longwave`. Change it during setup:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\install_companion.py --output "D:\Audio"
-```
-
-Use `--home` to choose a different companion data directory. Keep the source folder and `.venv` in place for this developer installation. Standalone users use the setup package above.
-
-The extension key in `extension/public-key.json` is a public development identity, not a secret. It keeps the unpacked extension ID stable so the native host can allow exactly this extension. Public browser-store identities will need their own host allowlist entries.
-
-## How it works
-
-```text
-TypeScript extension
-       │ narrow, versioned Native Messaging commands
-       ▼
-Python native host ── SQLite job journal
-                           │
-                    detached supervisor
-                           │ one job process at a time
-                           ▼
-                 SoundCloud adapter / yt-dlp
-                           │ bounded fragment concurrency
-                           ▼
-                 disk-backed partial audio
-                           │ FFmpeg + ffprobe
-                           ▼
-                    verified local output
-```
-
-The UI never receives audio bytes. The background worker forwards commands, while the companion owns durable state. Each job runs in its own process so cancellation releases extractor file handles on Windows. An OS lock prevents duplicate supervisors. A Windows Job Object ties child processes to their supervisor when available.
-
-The adapter rejects previews, encrypted playlists, unsupported live/master playlists, and restricted access. It passes the exact validated HLS media playlist to the downloader. Three fragment requests may run at once; only one track is active. Read [architecture](docs/architecture.md) for recovery semantics and [source research](docs/research/soundcloud-source-feasibility.md) for the initial code review.
-
-## Reliability and current limits
-
-- **Resume is conditional.** An identical HLS source fingerprint or a validated direct-file identity permits partial reuse. If a signed URL or manifest changes, this preview restarts safely instead of guessing that fragments match. It retains old partial attempts.
-- **Pause is cooperative.** An in-flight request can take up to its network timeout to stop. Conversion is stopped through its owned process.
-- **Recovery after reboot requires reopening Longwave.** The companion has no system-startup registration. Opening the workspace reconciles active jobs and restarts the worker.
-- **Keep free disk space.** Source, output, and earlier interrupted attempts can coexist. There is not yet an automatic partial-cache cleanup UI.
-- **Queue:** up to 20 unfinished jobs; the workspace exposes up to 100 jobs with unfinished work prioritized. Single tracks only; playlists and bulk downloads are not implemented.
-- **Formats:** supported clear MP3/AAC/M4A/Opus/Ogg sources. A supported stream is not guaranteed for every track. No DRM, subscription bypass, private-session extraction, or region circumvention.
-- **Release scope:** matching FFmpeg/ffprobe 9.1 inputs are pinned and verified. The installer is unsigned; broader security/OS testing and store review remain requirements for a stable release.
-- Some error explanations remain English when the interface is Arabic. Filesystem history is local; moving a finished file makes “Show in folder” unavailable.
-
-## Development and verification
-
-```powershell
-npm run check          # strict TypeScript checks
-npm test               # Python unit and real local-media integration tests
-npm run build          # unpacked Chromium extension
-npm run test:browser   # isolated headless Edge + real Native Messaging + accessibility
-npm run format:check   # source/document formatting
-npm run release:windows # setup, extension/store/source ZIPs, and checksums
-npm run test:release   # actual ZIP without system Python/Node on PATH
-```
-
-Tests choose `.venv` when present. Integration tests generate their own sine-wave audio and serve it over loopback; no copyrighted recordings are in the fixtures. They exercise progressive transfer, HLS assembly, MP3 conversion, source preservation, pause/resume equivalence, framing, origin validation, and durable job transitions. Without yt-dlp or the media tools, the integration tests report explicit skips.
-
-Browser tests use fresh, isolated Edge profiles under `.runtime/browser-smoke-*`; they do not access your normal tabs or history. The companion must be registered first. `npm run preview` serves a **simulated UI-only preview**; it cannot download audio and is never bundled into the extension.
-
-For a read-only source check:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\inspect_source.py "https://soundcloud.com/artist/track"
-```
-
-This prints sanitized metadata, not signed media URLs. See [verification evidence](docs/verification.md) for the tested scope and remaining work.
-
-## Repository
-
-```text
-extension/src/          UI, browser adapter, protocol types, translations
-extension/public/       HTML and styles
-companion/longwave/      Native host, journal, source adapter, worker, audio engine
-companion/tests/         Unit tests and generated-media integration tests
-scripts/                Build, installation, browser tests, diagnostics
-release/                Standalone installer, pinned inputs, native executable shim
-docs/                   Architecture, research, verification, release plan
-.github/workflows/      Build and test checks
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [PRIVACY.md](PRIVACY.md).
-
-## Disconnect or uninstall
-
-Standalone users: run **Longwave-Setup.exe → Disconnect companion**, then remove the extension in the browser. Files and history are preserved. For developer installations, use the same `--home` used during installation:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\install_companion.py --uninstall
-```
-
-This requests a pause, stops the supervisor after its current job stops, and removes only matching Longwave registry entries. Downloaded audio, history, and partial files are preserved. After the worker has exited, you may remove its data directory if you no longer want that data.
-
-## Usage and licensing
-
-Save only audio you own or have permission to retain. Respect copyright, licenses, and SoundCloud's terms. Public playback availability does not establish permission to download. Longwave does not bypass DRM, paywalls, or access controls and is not affiliated with SoundCloud.
-
-Longwave's original source is [MIT-licensed](LICENSE). CPython, yt-dlp, FFmpeg, and development packages retain their own licenses. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The standalone ZIP includes CPython and yt-dlp source with notices; setup obtains media tools directly from upstream. Native executables are excluded from Git and the browser extension archive.
+Original project code is MIT licensed. Third-party components retain their own terms. [License](LICENSE) · [Third-party notices](THIRD_PARTY_NOTICES.md)

@@ -2,11 +2,21 @@
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 from . import PROTOCOL_VERSION, VERSION
 from .model import ACTIVE, UserError, identifier, public_job, track_url
 from .runtime import config, ensure_worker, hidden_process_options, require_tools, tools_status
+
+
+def completed_file(store, job_id):
+    job = store.get(identifier(job_id))
+    path = Path(job.get("output") or "").resolve()
+    root = Path(config(store)["output_dir"]).resolve()
+    if job["state"] != "completed" or not path.is_relative_to(root) or not path.is_file():
+        raise UserError("file_missing", "The completed file has been moved or removed.")
+    return path
 
 
 def dispatch(store, message, start_worker=ensure_worker):
@@ -40,14 +50,16 @@ def dispatch(store, message, start_worker=ensure_worker):
             start_worker(store)
         return public_job(job)
     if command == "reveal":
-        job = store.get(identifier(message.get("id")))
-        path = Path(job.get("output") or "").resolve()
-        root = Path(config(store)["output_dir"]).resolve()
-        if job["state"] != "completed" or not path.is_relative_to(root) or not path.is_file():
-            raise UserError("file_missing", "The completed file has been moved or removed.")
+        path = completed_file(store, message.get("id"))
         if os.name == "nt":
             subprocess.Popen(["explorer.exe", "/select,", str(path)], **hidden_process_options())
+        elif sys.platform == "darwin":
+            subprocess.Popen(["/usr/bin/open", "-R", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
-            raise UserError("unsupported_platform", "Open the output folder in your file manager.")
+            import shutil
+            opener = shutil.which("xdg-open")
+            if not opener:
+                raise UserError("no_file_manager", "Open the saved audio folder in your file manager.")
+            subprocess.Popen([opener, str(path.parent)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return {"revealed": True}
     raise UserError("invalid_request", "Unknown command.")

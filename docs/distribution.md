@@ -1,75 +1,24 @@
-# Distribution and release operations
+# Release operations
 
-The 0.2.0 release candidate adds a Windows x64 distribution that users can install without Node.js, system Python, pip, or a source checkout. It is a separate deliverable from the development environment.
+[GitHub Releases](https://github.com/AhmadMustafaElSaid/longwave/releases) distributes Longwave. The Windows, macOS and Linux packages contain the same MV3 extension and a native companion with exact allowed extension identities. Phone access uses an existing installation and private HTTPS. Installation and removal details are in the [user guide](install.md).
 
-## Supported scope
+## Build and publish
 
-| Platform                    | Distribution status                                                      |
-| --------------------------- | ------------------------------------------------------------------------ |
-| Windows 10/11 x64 + Edge    | Standalone candidate and local browser verification                      |
-| Windows 10/11 x64 + Chrome  | Same candidate; separate browser validation recorded in release evidence |
-| Windows ARM64, macOS, Linux | Not packaged or validated; do not advertise support                      |
-| Firefox                     | Requires browser/manifest/native-host adaptation and validation          |
-| Android/iOS                 | Not supported by this native-companion design                            |
+1. Update the npm package, companion version, localized version text, changelog and release notes. The pipeline checks the tag against the source version.
+2. Push the change to the release branch and inspect the hosted Windows, macOS and Ubuntu jobs. The workflow installs exact npm and Python dependencies, tests the generated audio pipeline, tests package registration and validates phone and desktop browser flows.
+3. Tag the verified commit with `v<version>`. A tag build creates platform assets again, computes SHA-256 over the entire asset set, obtains a GitHub workload-identity attestation, and verifies every signed subject before publishing the completed release draft.
+4. Keep published assets immutable. Ship fixes from a new commit and version. The workflow can repair its own partially uploaded draft; an attempt to overwrite a published release fails.
 
-Cross-platform source abstractions are not proof that an installer runs on every device. New targets require their own native binaries, installer paths, signing, and test matrix.
+The Windows ZIP carries the embedded CPython runtime and pinned extractor. Setup downloads a hash-checked FFmpeg/ffprobe archive. The Debian installer depends on distro Python and FFmpeg. The portable Unix bundle and macOS package contain the extractor and rely on installed Python and FFmpeg. The native macOS package installs under `/usr/local/lib/longwave`; the portable archive can live in the user's own directory.
 
-## What users receive
+## Signing identities
 
-`longwave-VERSION-windows-x64.zip` contains a bilingual setup executable, its payload, and a bilingual local installation guide. The payload includes the official CPython embeddable runtime and pinned yt-dlp Python source. It does not include a developer environment or user-specific paths/data.
+The release provenance ties the asset digest to the GitHub workflow and source revision. Verify it with `gh attestation verify <file> --repo AhmadMustafaElSaid/longwave`. GitHub also accepts the downloaded bundle using `--bundle provenance.jsonl`.
 
-Setup downloads the pinned Gyan FFmpeg archive directly from upstream, validates its SHA-256, and installs matching FFmpeg/ffprobe. Both archive and payload validation fail closed. Build inputs and provenance are recorded in `release/dependencies.json` and the generated release manifest. The downloaded media binaries are not redistributed inside our ZIP.
+Windows builds can sign both setup and native host using an enrolled publisher certificate. Supply its thumbprint as `LONGWAVE_SIGNING_THUMBPRINT` and the SDK SignTool path as `LONGWAVE_SIGNTOOL`. The build timestamps and verifies both signatures before computing hashes. The Windows asset manifest records the actual Authenticode outcome.
 
-The candidate installer is **unsigned**. SHA-256 files are integrity evidence, not a publisher signature. Authenticode signing and reputation remain requirements for a smooth general-user release. Do not instruct users to disable Windows protections.
+On a signing-enabled Mac, `LONGWAVE_MAC_INSTALLER_IDENTITY` selects the Developer ID Installer keychain identity. `LONGWAVE_NOTARY_PROFILE` enables submission through the configured Apple keychain profile. The script checks the submission result, staples the ticket and validates the output. The public hosted workflow currently has neither publisher credential configured.
 
-## Installation layout
+## Browser stores
 
-```text
-%LOCALAPPDATA%/Longwave/
-  installation.json          Current and previous version paths
-  versions/<version>-<id>/   Immutable runtime, companion, extension, media, notices
-  data/                     SQLite queue, native-host registration, partial audio
-  cache/                    Verified upstream media archive
-  setup-lock/               Exclusive installer lock
-```
-
-Audio defaults to the user's `Downloads/Longwave`, and the installer offers a folder picker. Chrome and Edge registrations are per-user, restricted to explicit extension identities. No administrator elevation, service, startup entry, forced browser policy, or network command listener is installed.
-
-Installers stage side-by-side versions and health-check them before activation. Activation pauses jobs and waits for the previous worker to stop. Config files are atomically replaced; a registry-write failure restores prior values. Failed staging remains inactive. Re-running setup repairs/reinstalls; it never overwrites a running version.
-
-Rollback switches to the immediately previous installed companion and exposes that version's extension folder. It is intended for versions with the same database/protocol compatibility. Future schema changes must add migration/rollback rules before shipping. Disconnect removes only matching Longwave native-host registrations, stops work, and retains audio/history. Old versions and cache are retained; there is no automatic disk cleanup in this candidate.
-
-The browser extension remains unpacked for candidate testing. Updating the companion does not silently replace a browser-loaded extension: users load the matching new extension folder following the guide. Stable releases should use store-managed extension updates with a compatible companion update policy.
-
-## Build and test
-
-On Windows with development prerequisites:
-
-```powershell
-npm ci
-npm run setup:media
-npm run check
-npm test
-npm run release:windows
-npm run test:release
-```
-
-Artifacts are written under `artifacts/releases/<version>/`: Windows setup ZIP, unpacked Chromium ZIP, store-upload ZIP, source ZIP, release manifest, and SHA256SUMS. The source archive uses an explicit allowlist; recordings, installed runtimes, browser profiles, SQLite, and local configuration are excluded.
-
-The release test extracts the actual ZIP into a Unicode path and removes system Python/Node from PATH. It verifies installation, repair/upgrade, rollback, native EXE framing, origin rejection, generated-media processing under the bundled interpreter, and data preservation on disconnect. It does not modify registry keys and does not pretend to be a clean OS/VM. Browser-to-native registration is a separate smoke test. The manually dispatched GitHub workflow runs the package tests on a fresh Windows runner and uploads artifacts; running it remotely still requires a repository.
-
-## Store publishing
-
-Chrome's normal consumer distribution requires Chrome Web Store publication; unpacked loading is a development/testing route. Edge Add-ons uses Partner Center submission. Store review and acceptance are external decisions, not guaranteed by building a ZIP.
-
-1. Reserve Chrome/Edge listings and obtain their extension IDs.
-2. Fill `release/store-ids.json` with those IDs, rebuild, and test actual store identities against the companion allowlist. Null IDs are not inferred or granted wildcard access.
-3. Host the repository privacy/support pages and candidate download at stable HTTPS URLs.
-4. Complete [store listing material](store-listing.md) with real publisher/contact URLs.
-5. Sign the installer using the publisher's signing identity; regenerate artifact hashes after signing.
-6. Run the clean-machine matrix and upload the store ZIP for review. Do not publish a listing that implies mobile/all-platform support.
-7. Publish a versioned GitHub release with changelog, checksums, source, dependency manifest, installation instructions, and explicit supported platforms.
-
-The build generates a separate store-upload ZIP without the unpacked development key. The companion allows the development ID plus only configured store IDs. Do not submit the store package as functional until its store ID has been configured and verified.
-
-Sources: [Chrome distribution](https://developer.chrome.com/docs/extensions/how-to/distribute), [Edge publication](https://learn.microsoft.com/en-us/microsoft-edge/extensions/publish/publish-extension), [CPython embedded runtime](https://www.python.org/downloads/release/python-31410/), [Gyan builds and licensing](https://www.gyan.dev/ffmpeg/builds/).
+The ready-to-upload ZIP omits the unpacked development key. Reserve a listing, record its assigned Chrome or Edge ID in `release/store-ids.json`, then verify the matching host allowlist and packaged extension before submission. Developer registration, platform review and the publisher’s rights to distribute the integration are prerequisites for each listing. [Store listing draft](store-listing.md) · [Chrome publication](https://developer.chrome.com/docs/webstore/publish) · [Microsoft Edge publication](https://learn.microsoft.com/en-us/microsoft-edge/extensions/publish/publish-extension)

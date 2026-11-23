@@ -55,7 +55,8 @@ class WorkerLock:
 
 def run_worker():
     store = Store()
-    with WorkerLock(store.root) as acquired:
+    lock = WorkerLock(store.root)
+    with lock as acquired:
         if not acquired:
             return
         guarded = guard_process_tree()
@@ -69,9 +70,12 @@ def run_worker():
                 time.sleep(1)
                 continue
             job = pending[0]
+            # If a POSIX supervisor exits abruptly, its live job still owns this
+            # same flock until it finishes. A replacement cannot write the same partial.
+            options = hidden_process_options() if os.name == "nt" else {"pass_fds": (lock.file.fileno(),)}
             process = subprocess.Popen([sys.executable, "-m", "longwave", "run-job", job["id"]],
                                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                       stderr=subprocess.DEVNULL, **hidden_process_options())
+                                       stderr=subprocess.DEVNULL, **options)
             code = process.wait()
             if code != 0 and store.get(job["id"])["state"] not in {"completed", "paused", "cancelled", "failed"}:
                 store.finish(job["id"], state="failed", error={"code": "worker_stopped",

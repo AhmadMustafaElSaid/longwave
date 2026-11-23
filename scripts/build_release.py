@@ -5,7 +5,6 @@ import os
 import shutil
 import subprocess
 import sys
-import urllib.request
 import uuid
 import zipfile
 from pathlib import Path
@@ -13,6 +12,25 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'release'))
 from download import digest, extract, fetch
+from package_unix import extractor_wheel
+
+
+def sign_windows(paths):
+    """Use an enrolled publisher certificate, including a hardware-backed one."""
+    thumbprint = os.environ.get("LONGWAVE_SIGNING_THUMBPRINT")
+    if not thumbprint:
+        return False
+    import re
+    if not re.fullmatch(r"[A-Fa-f0-9]{40}", thumbprint):
+        raise ValueError("Expected the SHA-1 thumbprint of the publisher certificate.")
+    tool = os.environ.get("LONGWAVE_SIGNTOOL") or shutil.which("signtool.exe")
+    if not tool:
+        raise ValueError("Install Windows SDK SignTool or set LONGWAVE_SIGNTOOL.")
+    for path in paths:
+        subprocess.run([tool, "sign", "/sha1", thumbprint, "/fd", "SHA256", "/tr",
+                        "http://timestamp.digicert.com", "/td", "SHA256", str(path)], check=True)
+        subprocess.run([tool, "verify", "/pa", "/all", str(path)], check=True)
+    return True
 
 
 def zip_tree(folder, target):
@@ -42,19 +60,11 @@ def main():
     pth = next((payload / 'runtime').glob('python*._pth'))
     runtime_zip = next((payload / 'runtime').glob('python*.zip')).name
     pth.write_text(f'{runtime_zip}\n.\n..\nLib/site-packages\n', encoding='ascii')
-    extractor = dependencies['extractor']
-    with urllib.request.urlopen(extractor['metadataUrl'], timeout=30) as response:
-        metadata = json.load(response)
-    wheels = [entry for entry in metadata['urls'] if entry['filename'].endswith('.whl')
-              and entry['digests']['sha256'] == extractor['sha256']]
-    if len(wheels) != 1:
-        raise SystemExit('The pinned extractor wheel was not found.')
-    wheel = fetch(wheels[0]['url'], extractor['sha256'], cache / 'extractor.whl')
-    extract(wheel, payload / 'runtime/Lib/site-packages')
+    extract(extractor_wheel(), payload / 'runtime/Lib/site-packages')
     shutil.copytree(ROOT / 'companion/longwave', payload / 'longwave',
                     ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
     shutil.copytree(ROOT / 'dist/chromium', payload / 'extension')
-    for name in ('install.py', 'download.py', 'dependencies.json'):
+    for name in ('install.py', 'download.py', 'dependencies.json', 'Phone.cmd'):
         shutil.copy2(ROOT / 'release' / name, payload / name)
     identity = (ROOT / 'dist/extension-id.txt').read_text().strip()
     origins = [f'chrome-extension://{identity}/']
@@ -76,6 +86,7 @@ def main():
                     '/reference:System.Web.Extensions.dll',
                     '/out:' + str(bundle / 'Longwave-Setup.exe'), str(ROOT / 'release/Host.cs'),
                     str(ROOT / 'release/Setup.cs')], check=True)
+    signed = sign_windows([payload / 'LongwaveHost.exe', bundle / 'Longwave-Setup.exe'])
     for source, destination in (('release/START-HERE.html', 'START-HERE.html'),
                                 ('release/LICENSES.txt', 'LICENSES.txt'), ('LICENSE', 'LICENSE')):
         shutil.copy2(ROOT / source, bundle / destination)
@@ -103,8 +114,8 @@ def main():
                  '.gitignore', '.editorconfig', '.prettierignore', '.prettierrc.json'):
         shutil.copy2(ROOT / name, source / name)
     zip_tree(source, output / f'longwave-{version}-source.zip')
-    report = {'version': version, 'platform': 'windows-x64', 'channel': 'release-candidate',
-              'signed': False, 'dependencies': dependencies,
+    report = {'version': version, 'platform': 'windows-x64', 'channel': 'github-release',
+              'authenticode': signed, 'dependencies': dependencies,
               'assets': {p.name: {'sha256': digest(p), 'bytes': p.stat().st_size}
                          for p in sorted(output.glob('*.zip'))}}
     (output / 'release-manifest.json').write_text(json.dumps(report, indent=2) + '\n')

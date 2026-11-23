@@ -1,0 +1,151 @@
+name: Verify and release
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  packages:
+    name: Build and test on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-24.04, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.13"
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run build
+      - name: Match the release tag to the source version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: python -c "import json, os; assert 'v'+json.load(open('package.json'))['version'] == os.environ['GITHUB_REF_NAME']"
+      - run: python -m pip install --require-hashes -r companion/requirements.txt
+      - name: Install Windows media tools
+        if: runner.os == 'Windows'
+        run: npm run setup:media
+      - name: Install Linux media tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Install macOS media tools
+        if: runner.os == 'macOS'
+        run: command -v ffmpeg || brew install ffmpeg
+      - name: Locate POSIX media tools
+        if: runner.os != 'Windows'
+        run: |
+          echo "LONGWAVE_TEST_FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
+          echo "LONGWAVE_TEST_FFPROBE=$(command -v ffprobe)" >> "$GITHUB_ENV"
+      - name: Test queue, media pipeline, recovery, packaging and pairing
+        run: python scripts/test_suite.py
+      - name: Build Windows ZIPs and verify the installed runtime
+        if: runner.os == 'Windows'
+        run: |
+          python scripts/build_release.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/test_release.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python scripts/test_release_browser.py
+      - name: Build and inspect Debian package
+        if: runner.os == 'Linux'
+        run: |
+          python scripts/package_unix.py --deb
+          sudo apt-get install -y ./artifacts/releases/*/*.deb
+          longwave --help
+          python scripts/test_long_tracks.py --report artifacts/long-tracks-linux.json
+      - name: Build and inspect macOS package
+        if: runner.os == 'macOS'
+        run: |
+          python scripts/package_unix.py
+          python scripts/package_macos.py
+      - name: Install, connect, update and disconnect the Unix archive
+        if: runner.os != 'Windows'
+        run: python scripts/test_unix_package.py
+      - name: Test mobile Chrome layout, download and playback
+        if: runner.os == 'Linux'
+        run: |
+          npx playwright-core install --with-deps chromium
+          npm run test:phone
+      - name: Test mobile Safari layout, download and playback on WebKit
+        if: runner.os == 'macOS'
+        env:
+          PHONE_ENGINE: webkit
+        run: |
+          npx playwright-core install webkit
+          npm run test:phone
+      - name: Collect platform assets
+        shell: bash
+        run: |
+          mkdir output
+          case "$RUNNER_OS" in
+            Windows) cp artifacts/releases/*/*.zip artifacts/releases/*/release-manifest.json output/ ;;
+            Linux) cp artifacts/releases/*/*.deb artifacts/releases/*/*.tar.gz artifacts/long-tracks-linux.json output/ ;;
+            macOS) cp artifacts/releases/*/*.pkg output/ ;;
+          esac
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ runner.os }}
+          path: output/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Sign, verify and publish
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request'
+    needs: packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: release-*
+          path: output
+          merge-multiple: true
+      - name: Check the asset set and record all checksums
+        working-directory: output
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for suffix in windows-x64.zip chromium.zip source.zip store-upload.zip unix.tar.gz all.deb macos.pkg; do
+            test -s "longwave-$version-$suffix"
+          done
+          test -s release-manifest.json
+          test -s long-tracks-linux.json
+          sha256sum * > ../SHA256SUMS.txt
+          mv ../SHA256SUMS.txt .
+          sha256sum --check SHA256SUMS.txt
+      - name: Sign release provenance with GitHub's workload identity
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: output/*
+      - name: Verify signed assets and publish the completed draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROVENANCE: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          for asset in output/*; do
+            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --bundle "$PROVENANCE"
+          done
+          cp "$PROVENANCE" output/provenance.jsonl
+          if gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft > draft-status; then
+            test "$(cat draft-status)" = true
+          else
+            gh release create "$GITHUB_REF_NAME" --verify-tag --draft --title "Longwave $GITHUB_REF_NAME" --notes-file docs/release-notes.md
+          fi
+          gh release upload "$GITHUB_REF_NAME" output/* --clobber
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest

@@ -28,10 +28,13 @@ try:
     register(target / 'data/native-host.json')
     env = dict(os.environ, LONGWAVE_EXTENSION=str(Path(receipt['current']) / 'extension'),
                LONGWAVE_EXPECTED_OUTPUT=config['output_dir'])
-    browsers = {'edge': 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-                'chrome': 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'}
-    for name, executable in browsers.items():
-        if not Path(executable).is_file():
+    browsers = {'edge': 'Microsoft/Edge/Application/msedge.exe',
+                'chrome': 'Google/Chrome/Application/chrome.exe'}
+    for name, relative in browsers.items():
+        executable = next((str(Path(base) / relative) for base in
+                           (os.environ['ProgramFiles'], os.environ['ProgramFiles(x86)'])
+                           if (Path(base) / relative).is_file()), None)
+        if not executable:
             results.append({'browser': name, 'result': 'not installed'})
             continue
         env['LONGWAVE_BROWSER'] = executable
@@ -51,5 +54,5 @@ finally:
                 winreg.SetValueEx(key, '', 0, old[1], old[0])
     (ROOT / 'artifacts/release-browser-results.json').write_text(json.dumps(results, indent=2))
 
-if any(result.get('ok') is False for result in results):
+if not all(result.get('ok') for result in results):
     sys.exit(1)

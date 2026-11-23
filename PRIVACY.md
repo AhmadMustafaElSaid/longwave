@@ -8,7 +8,9 @@ The extension stores its language preference. The companion stores public source
 
 Signed media URLs are used in memory and are not deliberately logged or returned to the UI. The pinned extractor may maintain its local technical cache. Longwave does not import browser cookies, passwords, authenticated accounts, or browsing history. “Use current tab” reads the active tab URL following the extension's user gesture.
 
-Permissions:
+Phone access starts only when you launch it. The server listens on the computer's loopback interface. When you configure a private HTTPS proxy, that proxy and one paired browser can access the queue and completed files. The pairing code and session expire and are held in memory. The browser stores a session cookie and language preference. Saving a file creates a copy on the phone. Stopping the server invalidates the session. Your network and proxy providers handle traffic according to their own policies.
+
+## Extension permissions
 
 | Permission        | Purpose                                                 |
 | ----------------- | ------------------------------------------------------- |

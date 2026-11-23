@@ -16,6 +16,15 @@ def main():
         run_worker()
         return
     store = Store()
+    if sys.argv[1:2] == ["phone"]:
+        import argparse
+        from .phone import serve
+        parser = argparse.ArgumentParser(prog="longwave phone")
+        parser.add_argument("--origin")
+        parser.add_argument("--port", type=int, default=8765)
+        args = parser.parse_args(sys.argv[2:])
+        serve(store, args.origin, args.port)
+        return
     if len(sys.argv) == 3 and sys.argv[1] == "run-job":
         from .model import identifier
         from .worker import execute_job
