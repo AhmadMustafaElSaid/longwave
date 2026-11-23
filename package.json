@@ -1,0 +1,31 @@
+{
+  "name": "longwave",
+  "version": "0.2.0-rc.1",
+  "private": true,
+  "description": "A local-first SoundCloud audio download manager for long listening.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node scripts/build.mjs",
+    "release:windows": "npm run build && python scripts/build_release.py",
+    "setup:media": "python scripts/fetch_media.py",
+    "test:release": "python scripts/test_release.py",
+    "check": "tsc --noEmit",
+    "test": "node scripts/run-tests.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "preview": "node scripts/preview.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "verify": "npm run check && npm test && npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@types/chrome": "0.3.7",
+    "@types/node": "26.6.6",
+    "playwright-core": "1.65.1",
+    "prettier": "3.10.1",
+    "typescript": "7.0.2"
+  }
+}

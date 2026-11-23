@@ -1,0 +1,26 @@
+LONGWAVE DISTRIBUTION NOTICES
+
+Longwave original code: MIT. See LICENSE in this folder.
+
+This package includes the official CPython 3.14.10 embeddable runtime.
+Its license and notices are retained in payload/runtime/LICENSE.txt.
+Source: https://www.python.org/downloads/release/python-31410/
+
+yt-dlp 2026.10.26 is distributed as Python source from its pinned wheel.
+Its licenses remain under payload/runtime/Lib/site-packages/*.dist-info/licenses.
+Source and license: https://github.com/yt-dlp/yt-dlp/tree/2026.10.26
+No third-party yt-dlp executable is included.
+
+FFmpeg and ffprobe 9.1 are downloaded by setup directly from gyan.dev.
+They are NOT bundled or re-hosted in this release archive. The downloaded
+archive is SHA-256 verified before extraction. Installed upstream notices
+are preserved alongside the media tools.
+The Gyan build is GPLv3; these terms apply independently of Longwave's MIT license.
+Upstream binaries and source references:
+https://github.com/GyanD/codexffmpeg/releases/tag/9.1
+https://www.gyan.dev/ffmpeg/builds/
+https://ffmpeg.org/legal.html
+
+The setup executable is currently unsigned. Checksums detect accidental
+changes relative to a trusted manifest; they are not an Authenticode identity.
+Do not disable Windows security protections to install this package.

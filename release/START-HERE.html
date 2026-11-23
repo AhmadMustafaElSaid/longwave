@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Longwave — Start here</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f4f7f0;
+      color: #173d36;
+      font:
+        18px/1.7 system-ui,
+        sans-serif;
+    }
+    main {
+      max-width: 820px;
+      margin: 48px auto;
+      padding: 36px;
+      background: white;
+      border-radius: 20px;
+    }
+    h1 {
+      font-size: 44px;
+      margin: 0;
+    }
+    h2 {
+      margin-top: 32px;
+    }
+    code {
+      background: #edf2e8;
+      padding: 3px 7px;
+      border-radius: 4px;
+      overflow-wrap: anywhere;
+    }
+    a {
+      color: #136d59;
+    }
+    small {
+      color: #526d63;
+    }
+    li {
+      margin: 12px 0;
+    }
+    .badge {
+      background: #e4efdd;
+      padding: 6px 14px;
+      border-radius: 30px;
+      display: inline-block;
+    }
+    section {
+      border-top: 1px solid #d7e2d3;
+      margin-top: 32px;
+      padding-top: 16px;
+    }
+    @media (max-width: 700px) {
+      main {
+        margin: 16px;
+        padding: 20px;
+      }
+    }
+  </style>
+  <main>
+    <p class="badge">Windows 10/11 · x64 · Release candidate</p>
+    <h1>longwave.</h1>
+    <p>Long listens. Local files. No developer tools required.</p>
+    <ol>
+      <li>
+        Extract the <strong>entire ZIP</strong>, then open <strong>Longwave-Setup.exe</strong>. Keep
+        the <code>payload</code> folder beside it.
+      </li>
+      <li>
+        Choose where audio is saved. Allow setup to fetch the verified audio tools, then select
+        <strong>Install / update</strong>. Setup installs for your account; no administrator
+        privileges are needed.
+      </li>
+      <li>
+        Open <code>edge://extensions</code> or <code>chrome://extensions</code>. Enable
+        <strong>Developer mode</strong>, choose <strong>Load unpacked</strong>, and paste the
+        extension folder using setup's <strong>Copy path + open guide</strong> button.
+      </li>
+      <li>
+        Open Longwave from your browser toolbar. Check for <strong>Connected</strong>, paste a
+        SoundCloud track link, and download.
+      </li>
+    </ol>
+    <p>
+      The extension folder is inside <code>%LOCALAPPDATA%\Longwave\versions</code>. Keep that
+      installed folder in place. After installation you can move or remove the extracted download
+      package.
+    </p>
+    <h2>Updating and recovery</h2>
+    <p>
+      Run setup from the next release to install it alongside the current version. Active downloads
+      are paused. Load the new extension folder (remove the old unpacked entry if needed), then
+      resume downloads in Longwave. <strong>Restore previous version</strong> switches the companion
+      back and shows the earlier extension folder. No automatic updates run in the background.
+    </p>
+    <p>
+      <strong>Disconnect companion</strong> removes matching browser registration and stops work.
+      Audio, history, partial data, and installed versions are kept. Remove the extension through
+      the browser. You can delete <code>%LOCALAPPDATA%\Longwave</code> after disconnecting if you
+      also want to remove that local data; keep any audio stored there first.
+    </p>
+    <h2>What this release supports</h2>
+    <p>
+      Public full-length clear audio, source-format output and optional MP3. A creator download
+      button is not required. Resume is conditional on source identity; changed signed URLs can
+      require restarting. Choose playback speed in your local player.
+    </p>
+    <p>
+      This is an unsigned release candidate. Store installation, signed installers, macOS, Linux,
+      ARM64, and mobile devices are not yet released. Download only from the project's verified
+      release page. Do not disable operating-system protections.
+    </p>
+    <section lang="ar" dir="rtl">
+      <h2>دليل البدء</h2>
+      <p>هذه حزمة مستقلة لـ Windows 10/11 ‏64-bit، ولا تحتاج إلى تثبيت Python أو Node.js.</p>
+      <ol>
+        <li>فك ضغط الحزمة كاملة ثم افتح <strong>Longwave-Setup.exe</strong>.</li>
+        <li>
+          اختر مجلد الصوت ووافق على تنزيل أدوات الوسائط، ثم اضغط <strong>تثبيت / تحديث</strong>.
+        </li>
+        <li>
+          افتح <code>edge://extensions</code> أو <code>chrome://extensions</code>، فعّل وضع المطوّر
+          واختر <strong>Load unpacked</strong> ثم الصق مسار الإضافة من زر
+          <strong>نسخ المسار وفتح الدليل</strong> في المثبّت.
+        </li>
+        <li>افتح الإضافة وتأكد من ظهور «متصل»، ثم الصق رابط المقطع.</li>
+      </ol>
+      <p>
+        عند التحديث تتوقف التنزيلات مؤقتًا وتبقى ملفاتك محفوظة. حمّل مجلد الإضافة الجديد، ثم استأنف من
+        الواجهة. زر استعادة الإصدار السابق يعيد التطبيق المرافق إلى النسخة السابقة. زر الفصل يوقف
+        العمل ويلغي اتصال المتصفحات، دون حذف الصوت أو السجل.
+      </p>
+      <p>
+        هذه نسخة مرشحة للإصدار، وليست منشورة في المتاجر بعد. دعم macOS وLinux والأجهزة المحمولة غير
+        متاح حاليًا.
+      </p>
+    </section>
+    <small
+      >Save only audio you own or have permission to retain. Respect copyright, licenses, and
+      platform terms. Longwave does not bypass DRM or access controls. See LICENSES.txt for runtime
+      and media-tool notices.</small
+    >
+  </main>
+</html>

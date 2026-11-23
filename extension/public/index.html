@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Longwave — Your audio, offline</title>
+    <link rel="icon" href="icons/48.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="index.html" aria-label="Longwave home"
+        ><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span
+        >longwave<span class="brand-dot">.</span></a
+      >
+      <div class="nav-caption" data-text="workspace">YOUR WORKSPACE</div>
+      <nav aria-label="Workspace">
+        <a class="nav-item selected" href="index.html"
+          ><span aria-hidden="true">↓</span><span data-text="library">Downloads</span
+          ><span id="active-count" class="count">0</span></a
+        >
+        <button class="nav-item" data-setup>
+          <span aria-hidden="true">⌘</span><span data-text="setup">Companion setup</span>
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-symbol" aria-hidden="true">↳</div>
+        <h2 data-text="local">LOCAL BY DESIGN</h2>
+        <p data-text="localText">
+          Your audio goes straight to your computer. No conversion servers. No account to create.
+        </p>
+        <span class="sidebar-version" data-text="version">Developer preview · 0.1.0</span>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <span class="topbar-label" data-text="library">Downloads</span>
+        <div class="topbar-actions">
+          <button id="language" class="language" data-text="language">العربية</button
+          ><button id="connection" class="connection" data-setup>
+            <span class="status-dot"></span
+            ><span id="connection-text" data-text="checking">Connecting…</span></button
+          ><button id="open-workspace" class="text-button popup-only" data-text="open">
+            Open workspace
+          </button>
+        </div>
+      </header>
+      <div class="content">
+        <section class="hero" aria-labelledby="headline">
+          <div>
+            <p class="eyebrow" data-text="eyebrow">SOUNDCLOUD → YOUR LIBRARY</p>
+            <h1 id="headline" data-text="headline">Long listens.&#10;Yours to keep.</h1>
+            <p class="subtitle" data-text="subtitle">
+              Save audio for offline listening, with room for the whole conversation.
+            </p>
+          </div>
+          <div class="wave-art" aria-hidden="true">
+            <div class="wave-disc">
+              <span></span><span></span><span></span><span></span><span></span><span></span
+              ><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <span class="wave-caption">OFFLINE / ON YOUR TERMS</span>
+          </div>
+        </section>
+        <div class="workspace-grid">
+          <div class="primary-column">
+            <section class="composer" aria-labelledby="add-title">
+              <div class="section-label">
+                <h2 id="add-title" data-text="add">Add a track</h2>
+                <span class="step-tag">01 — AUDIO</span>
+              </div>
+              <form id="download-form">
+                <label for="url" class="sr-only" data-text="label">SoundCloud track link</label>
+                <div class="url-row">
+                  <span class="link-icon" aria-hidden="true">↗</span
+                  ><input
+                    id="url"
+                    type="url"
+                    dir="ltr"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required
+                    maxlength="2048"
+                    placeholder="https://soundcloud.com/artist/track"
+                  />
+                </div>
+                <button
+                  id="current-tab"
+                  type="button"
+                  class="text-button current-tab"
+                  data-text="current"
+                >
+                  Use current tab
+                </button>
+                <fieldset>
+                  <legend data-text="output">OUTPUT</legend>
+                  <div class="format-options">
+                    <label class="format-option"
+                      ><input type="radio" name="format" value="original" checked /><span
+                        ><strong data-text="original">Source audio</strong
+                        ><small data-text="originalHint"
+                          >Recommended · preserves quality</small
+                        ></span
+                      ><span class="radio-indicator" aria-hidden="true"></span></label
+                    ><label class="format-option"
+                      ><input type="radio" name="format" value="mp3" /><span
+                        ><strong data-text="mp3">MP3</strong
+                        ><small data-text="mp3Hint">Wider compatibility · may convert</small></span
+                      ><span class="radio-indicator" aria-hidden="true"></span
+                    ></label>
+                  </div>
+                </fieldset>
+                <button id="submit" class="primary-button" type="submit" disabled>
+                  <span id="submit-label" data-text="download">Download audio</span
+                  ><span aria-hidden="true">↓</span>
+                </button>
+                <p class="format-note" data-text="formatNote">
+                  The available stream may differ from the creator's original upload.
+                </p>
+              </form>
+              <div id="setup-banner" class="setup-banner" hidden>
+                <span data-text="setupBody"
+                  >Install the companion once. It handles the audio while the extension stays
+                  light.</span
+                ><button class="text-button" data-setup data-text="setup">Companion setup</button>
+              </div>
+            </section>
+            <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+            <section class="queue-section" aria-labelledby="queue-title">
+              <div class="queue-heading">
+                <h2 id="queue-title">
+                  <span data-text="queue">Your downloads</span> <span id="total-count">0</span>
+                </h2>
+                <div class="filters" role="group" aria-label="Filter downloads">
+                  <button data-filter="all" aria-pressed="true" data-text="all">All</button
+                  ><button data-filter="active" aria-pressed="false" data-text="active">
+                    In progress</button
+                  ><button data-filter="done" aria-pressed="false" data-text="done">
+                    Completed
+                  </button>
+                </div>
+              </div>
+              <div id="jobs"></div>
+              <div id="empty" class="empty">
+                <div class="empty-icon" aria-hidden="true">↓</div>
+                <h3 id="empty-title" data-text="emptyTitle">Your next long listen starts here</h3>
+                <p id="empty-body" data-text="emptyBody">
+                  Paste a public SoundCloud track link above. There is no built-in duration cap.
+                </p>
+              </div>
+            </section>
+          </div>
+          <aside class="detail-column">
+            <section class="how-card">
+              <span class="detail-kicker">LESS FRICTION. MORE LISTENING.</span>
+              <h2 data-text="howTitle">Made for the whole track</h2>
+              <ol>
+                <li><span data-text="how1">Closing this page won't stop your download.</span></li>
+                <li>
+                  <span data-text="how2"
+                    >Source audio keeps the available quality. MP3 conversion is optional.</span
+                  >
+                </li>
+                <li>
+                  <span data-text="how3"
+                    >Open the file in your player and choose 2× when you want to.</span
+                  >
+                </li>
+              </ol>
+              <div class="speed-chip">1× <span>→</span> 2×</div>
+            </section>
+            <section class="destination-card">
+              <span class="detail-kicker" data-text="destination">SAVED TO</span>
+              <p id="destination" dir="auto" data-text="unknownFolder">
+                Chosen during companion setup
+              </p>
+            </section>
+          </aside>
+        </div>
+        <footer>
+          <span class="footer-mark" aria-hidden="true">↳</span>
+          <p data-text="rights">
+            Save only audio you have permission to keep. Respect copyright and platform terms.
+            Protected content is not supported.
+          </p>
+        </footer>
+      </div>
+    </main>
+    <dialog id="setup-dialog" aria-labelledby="setup-title">
+      <div class="dialog-top">
+        <span class="eyebrow">LONGWAVE / SETUP</span
+        ><button id="close-setup" class="text-button" data-text="close">Close</button>
+      </div>
+      <h2 id="setup-title" data-text="setupTitle">Connect your local companion</h2>
+      <p data-text="setupBody">
+        Install the companion once. It handles the audio while the extension stays light.
+      </p>
+      <ol>
+        <li data-text="step1"></li>
+        <li data-text="step2"></li>
+        <li data-text="step3"></li>
+      </ol>
+      <p class="setup-note" data-text="setupNote"></p>
+      <button id="recheck" class="primary-button" data-text="recheck">Check connection</button>
+    </dialog>
+  </body>
+</html>
