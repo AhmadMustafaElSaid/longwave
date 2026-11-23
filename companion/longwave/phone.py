@@ -203,7 +203,11 @@ class PhoneRequest(BaseHTTPRequestHandler):
             self.send_header("Accept-Ranges", "bytes")
             self.send_header("Content-Type", mimetypes.guess_type(path.name)[0] or "application/octet-stream")
             disposition = "attachment" if download else "inline"
-            self.send_header("Content-Disposition", f"{disposition}; filename*=UTF-8''{quote(path.name, safe='')}")
+            # Older mobile download managers only parse the ASCII filename parameter.
+            suffix = re.sub(r"[^a-zA-Z0-9.]", "", path.suffix)
+            basename = re.sub(r"[^a-zA-Z0-9 _.-]", "_", path.stem).strip(" ._") or "Longwave"
+            self.send_header("Content-Disposition",
+                             f"{disposition}; filename=\"{basename}{suffix}\"; filename*=UTF-8''{quote(path.name, safe='')}")
             self.send_header("Content-Length", str(remaining))
             if requested:
                 self.send_header("Content-Range", f"bytes {start}-{end}/{size}")

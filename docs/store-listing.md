@@ -36,6 +36,8 @@ No broad website access, cookies, browsing-history collection, analytics, advert
 
 ## Reviewer test instructions
 
+The [English desktop screenshot](images/dashboard.png) and [Arabic desktop screenshot](images/dashboard-ar.png) show the packaged extension UI at 1280 × 800 with an illustrative empty library. The 128 px product icon is inside the extension archive at `icons/128.png`. Regenerate screenshots after a UI change with `node scripts/store-screenshots.mjs` using a Playwright Chromium installation or an executable selected by `LONGWAVE_BROWSER`.
+
 Install the exact signed companion linked to the submission, then install the store test build whose ID is in its native-host allowlist. Open Longwave and confirm Connected. Use a public full-length track you have permission to save; confirm source output, progress, cancellation, and completed output. For reproducible processing checks without copyrighted music, run the generated-audio integration suite from the source archive.
 
 Do not supply private links, browser cookies, authentication bypass instructions, or misleading claims of guaranteed platform approval. Review possible store-policy restrictions on the actual product behavior before submitting.

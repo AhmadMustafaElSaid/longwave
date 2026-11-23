@@ -86,6 +86,7 @@ class PhoneTests(unittest.TestCase):
         status, headers, body = self.request(path)
         self.assertEqual((status, body), (200, file.read_bytes()))
         self.assertIn("attachment;", headers["Content-Disposition"])
+        self.assertIn('filename="Longwave.mp3"', headers["Content-Disposition"])
         self.assertIn("filename*=UTF-8", headers["Content-Disposition"])
         for header, expected in (("bytes=20-29", bytes(range(20,30))), ("bytes=-5", bytes(range(95,100))), ("bytes=99-", bytes([99]))):
             status, headers, body = self.request(path.replace("/save","/listen"), Range=header)

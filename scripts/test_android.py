@@ -1,6 +1,6 @@
 """Use an isolated Android emulator and stock Chrome to save and verify a file."""
-import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -65,7 +65,8 @@ def main():
         adb("push",str(flags),"/data/local/tmp/chrome-command-line")
     adb("shell","am","set-debug-app","--persistent","com.android.chrome")
     adb("shell","am","force-stop","com.android.chrome")
-    with subprocess.Popen([sys.executable,"scripts/phone_fixture.py"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True) as server:
+    with subprocess.Popen([sys.executable,"scripts/phone_fixture.py"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,
+                          text=True,env=dict(os.environ,LONGWAVE_FIXTURE_TRACE="1")) as server:
         try:
             fixture=json.loads(server.stdout.readline())
             port=fixture["origin"].rsplit(":",1)[1]
@@ -81,19 +82,23 @@ def main():
                 tap(target)
                 target=wait_node(lambda n:label(n)=="Save to phone")
             tap(target)
-            path="/sdcard/Download/Longwave test.wav"
+            last_labels=[]
             end=time.monotonic()+50
             while time.monotonic()<end:
-                result=subprocess.run(["adb","-e","exec-out","cat",path.replace(" ","\\ ")],capture_output=True,timeout=10)
-                if result.returncode==0 and hashlib.sha256(result.stdout).hexdigest()==fixture["sha256"]:
-                    print("Android Chrome paired and saved a byte-identical file in the system Downloads directory.")
-                    return
-                for node in tree().iter("node"):
-                    if label(node).lower() in {"download","download again","allow","continue"}:
+                result=subprocess.run(["adb","-e","shell","sha256sum /sdcard/Download/*"],capture_output=True,text=True,timeout=10)
+                for line in result.stdout.splitlines():
+                    if line.startswith(fixture["sha256"]+" ") and line.rstrip().lower().endswith(".wav"):
+                        print("Android Chrome paired and saved a byte-identical WAV in the system Downloads directory.")
+                        return
+                nodes=list(tree().iter("node"))
+                last_labels=[label(node)[:65] for node in nodes if label(node)]
+                for node in nodes:
+                    if label(node).lower() in {"download","download again","allow","continue","save","ok","allow notifications"}:
                         tap(node)
                         break
                 time.sleep(.5)
-            raise RuntimeError("Android Downloads did not contain the expected file.")
+            print("Download directory:",adb("shell","ls","-la","/sdcard/Download"),flush=True)
+            raise RuntimeError("Android Downloads did not contain the expected file. Visible controls: "+str(last_labels))
         finally:
             server.stdin.close()
             server.wait(timeout=10)

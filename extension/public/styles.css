@@ -220,12 +220,6 @@ main {
   align-items: center;
   margin-block-end: 34px;
 }
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: #5d6d5e;
-  font-weight: 650;
-}
 .hero h1 {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 52px;
@@ -276,13 +270,6 @@ main {
   height: 122px;
   background: var(--orange);
 }
-.wave-caption {
-  font-size: 11px;
-  letter-spacing: 2px;
-  display: block;
-  color: #5f715b;
-  margin-block-start: 16px;
-}
 .workspace-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 248px;
@@ -305,11 +292,6 @@ h2 {
   font-size: 16px;
   font-weight: 600;
   margin: 0;
-}
-.step-tag {
-  font-size: 11px;
-  letter-spacing: 1.4px;
-  color: #61705e;
 }
 .url-row {
   display: flex;
@@ -502,21 +484,6 @@ legend {
   font-size: 11px;
   color: #596b4d;
   padding-top: 3px;
-}
-.speed-chip {
-  font-family: Georgia, serif;
-  font-size: 31px;
-  color: #547a54;
-  border-top: 1px solid #d4dfcd;
-  padding-top: 20px;
-  margin-top: 25px;
-  letter-spacing: -1px;
-}
-.speed-chip span {
-  font-family: Arial;
-  font-size: 20px;
-  color: #99ac88;
-  margin-inline: 18px;
 }
 .destination-card {
   padding: 4px 5px;
@@ -786,8 +753,7 @@ dialog ol {
 .popup .wave-art,
 .popup .detail-column,
 .popup .topbar-label,
-.popup .queue-section,
-.popup .step-tag {
+.popup .queue-section {
   display: none;
 }
 .popup main {
@@ -821,9 +787,6 @@ dialog ol {
 .popup .hero .subtitle {
   font-size: 11px;
   margin-bottom: 0;
-}
-.popup .eyebrow {
-  font-size: 11px;
 }
 .popup .workspace-grid {
   display: block;
@@ -865,7 +828,6 @@ dialog ol {
 [dir="rtl"] .how-card h2 {
   font-size: 23px;
 }
-[dir="rtl"] .eyebrow,
 [dir="rtl"] .nav-caption,
 [dir="rtl"] legend {
   letter-spacing: 0;
