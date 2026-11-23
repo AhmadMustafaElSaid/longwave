@@ -2,7 +2,7 @@
 
 Save a permitted SoundCloud track for offline listening in your own player. Longwave handles long recordings on your computer, keeps the available audio format or exports MP3, and continues working when you close the browser.
 
-**[Download Longwave](https://github.com/AhmadMustafaElSaid/longwave/releases/latest)** · [Installation](docs/install.md) · [دليل الاستخدام بالعربية](docs/quickstart-ar.md) · [Builds and tests](https://github.com/AhmadMustafaElSaid/longwave/actions/workflows/release.yml)
+**[Download Longwave](https://github.com/AhmadMustafaElSaid/longwave/releases/latest)** · [Project website](https://ahmadmustafaelsaid.github.io/longwave/) · [Installation](docs/install.md) · [دليل الاستخدام بالعربية](docs/quickstart-ar.md) · [Builds and tests](https://github.com/AhmadMustafaElSaid/longwave/actions/workflows/release.yml)
 
 ![Longwave downloads workspace](docs/images/dashboard.png)
 

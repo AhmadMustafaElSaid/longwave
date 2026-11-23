@@ -1,0 +1,8 @@
+title: Longwave
+description: Install the Longwave audio companion
+url: https://ahmadmustafaelsaid.github.io
+baseurl: /longwave
+plugins:
+  - jekyll-relative-links
+exclude:
+  - research

@@ -1,6 +1,6 @@
 # Store submission material
 
-Prepared for publisher submission. [Public source and releases](https://github.com/AhmadMustafaElSaid/longwave) · [Support](https://github.com/AhmadMustafaElSaid/longwave/issues) · [Privacy policy](https://github.com/AhmadMustafaElSaid/longwave/blob/main/PRIVACY.md). Publisher accounts, store IDs, publisher credentials and review remain pending.
+Prepared for publisher submission. [Website](https://ahmadmustafaelsaid.github.io/longwave/) · [Support](https://github.com/AhmadMustafaElSaid/longwave/issues) · [Privacy policy](https://ahmadmustafaelsaid.github.io/longwave/privacy/). Publisher accounts, store IDs, publisher credentials and review remain pending.
 
 ## Name
 

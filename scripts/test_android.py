@@ -15,8 +15,12 @@ def adb(*args, text=True):
 
 
 def tree():
-    adb("shell","uiautomator","dump","/sdcard/longwave-ui.xml")
-    return ET.fromstring(adb("exec-out","cat","/sdcard/longwave-ui.xml"))
+    # A newly launched activity can briefly have a null accessibility root.
+    data = adb("exec-out","uiautomator","dump","/dev/tty")
+    start, end = data.find("<?xml"), data.rfind("</hierarchy>")
+    if start < 0 or end < start:
+        return ET.Element("hierarchy")
+    return ET.fromstring(data[start:end+len("</hierarchy>")])
 
 
 def label(node):
