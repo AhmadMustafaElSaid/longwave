@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'release'))
 from install import register
 
-target = Path((ROOT / '.runtime/latest-release-test-root.txt').read_text())
+target = Path((ROOT / '.runtime/latest-release-test-root.txt').read_text(encoding='utf-8'))
 receipt = json.loads((target / 'installation.json').read_text())
 config = json.loads((target / 'data/config.json').read_text())
 keys = [f'Software\\{browser}\\NativeMessagingHosts\\app.longwave.companion'

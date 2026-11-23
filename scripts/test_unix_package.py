@@ -36,7 +36,7 @@ with tempfile.TemporaryDirectory() as temp:
         return json.loads(response.read(size))
     result = snapshot()
     assert result["ok"] and result["data"]["version"] == version and all(result["data"]["tools"].values()), result
-    assert pathlib.Path(result["data"]["outputDir"]) == output
+    assert pathlib.Path(result["data"]["outputDir"]).samefile(output)
     assert not cmd([manifest["path"], "chrome-extension://"+"b"*32+"/"], input=frame).stdout
     marker = output / "existing.mp3"
     marker.write_bytes(b"preserved")

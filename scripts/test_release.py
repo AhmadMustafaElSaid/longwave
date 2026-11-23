@@ -122,7 +122,7 @@ def main():
                 'root': str(target), 'nativeVersion': reply['data']['version']}
     (ROOT / 'artifacts/release-test-result.json').write_text(json.dumps(evidence, indent=2))
     print(json.dumps(evidence, indent=2))
-    (ROOT / '.runtime/latest-release-test-root.txt').write_text(str(target))
+    (ROOT / '.runtime/latest-release-test-root.txt').write_text(str(target), encoding='utf-8')
 
 
 if __name__ == '__main__':

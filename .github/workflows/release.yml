@@ -99,10 +99,26 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  android:
+    name: Save a file in Android Chrome
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Grant the runner access to its emulator accelerator
+        run: sudo setfacl -m "u:$(id -un):rw" /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 35
+          target: google_apis_playstore
+          arch: x86_64
+          profile: pixel_6
+          script: python3 scripts/test_android.py
+
   publish:
     name: Sign, verify and publish
     if: startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request'
-    needs: packages
+    needs: [packages, android]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:

@@ -122,7 +122,7 @@ def main():
     (output / 'SHA256SUMS.txt').write_text(''.join(f'{v["sha256"]}  {k}\n' for k,v in report['assets'].items()))
     print('BUNDLE=' + str(bundle))
     print('RELEASE=' + str(output))
-    (ROOT / '.runtime/latest-release-bundle.txt').write_text(str(bundle))
+    (ROOT / '.runtime/latest-release-bundle.txt').write_text(str(bundle), encoding='utf-8')
 
 
 if __name__ == '__main__':
