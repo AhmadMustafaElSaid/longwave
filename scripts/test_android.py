@@ -32,13 +32,20 @@ def tap(node):
     adb("shell","input","tap",str((left+right)//2),str((top+bottom)//2))
 
 
-def wait_node(predicate, seconds=55):
+def wait_node(predicate, seconds=55, reopen=None):
     end = time.monotonic()+seconds
+    reopened = False
     while time.monotonic()<end:
         ui = tree()
         for node in ui.iter("node"):
             if predicate(node):
                 return node
+        # First-run Chrome sometimes replaces the initial VIEW intent with its
+        # new-tab page. Reopen the same local origin once after setup completes.
+        if reopen and not reopened and any(label(n)=="Search or type URL" for n in ui.iter("node")):
+            adb("shell","am","start","-W","-a","android.intent.action.VIEW","-d",reopen,"com.android.chrome")
+            reopened = True
+            continue
         for node in ui.iter("node"):
             if label(node).lower() in {"use without an account","use chrome without an account","continue without an account","no thanks","got it"}:
                 tap(node)
@@ -72,7 +79,7 @@ def main():
             port=fixture["origin"].rsplit(":",1)[1]
             adb("reverse","tcp:"+port,"tcp:"+port)
             adb("shell","am","start","-W","-a","android.intent.action.VIEW","-d",fixture["origin"],"com.android.chrome")
-            field=wait_node(lambda n:n.get("class")=="android.widget.EditText" and not any(k in n.get("resource-id","") for k in ("url_bar","search_box")))
+            field=wait_node(lambda n:n.get("class")=="android.widget.EditText" and not any(k in n.get("resource-id","") for k in ("url_bar","search_box")), reopen=fixture["origin"])
             tap(field)
             adb("shell","input","text",fixture["code"])
             adb("shell","input","keyevent","66")

@@ -152,13 +152,16 @@ jobs:
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: output/*
+          create-storage-record: false
       - name: Verify signed assets and publish the completed draft
         env:
           GH_TOKEN: ${{ github.token }}
           PROVENANCE: ${{ steps.attest.outputs.bundle-path }}
         run: |
           for asset in output/*; do
-            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --bundle "$PROVENANCE"
+            gh attestation verify "$asset" --repo "$GITHUB_REPOSITORY" --bundle "$PROVENANCE" \
+              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml" \
+              --source-ref "$GITHUB_REF" --source-digest "$GITHUB_SHA"
           done
           cp "$PROVENANCE" output/provenance.jsonl
           if gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft > draft-status; then

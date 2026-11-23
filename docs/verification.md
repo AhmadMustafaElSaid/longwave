@@ -12,7 +12,11 @@ On Ubuntu 24.04 under WSL2, three generated constant-bitrate 24 kbps MP3 recordi
 
 The portable archive connected using an isolated Unix profile and handled native message framing, update and disconnect with file preservation. The Windows source suite passed 33 tests with zero skips. A Chromium 157 mobile-viewport test paired a browser, downloaded a byte-identical WAV fixture, played it at 2×, switched to Arabic and passed the selected automated axe checks. Tagged builds repeat the OS matrix and publish the Linux measurements alongside their assets. Physical handset coverage remains open. [Workflow runs](https://github.com/AhmadMustafaElSaid/longwave/actions/workflows/release.yml)
 
-## Earlier live verification
+## Hosted installation and phone checks
+
+The hosted macOS runner also installed the PKG with Apple's system installer, opened the installed extension in Chrome 157 and passed the WebKit 27.2 mobile-viewport playback and save checks. On an Android 15 emulator, stock Chrome paired with the fixture server and placed a SHA-256-identical audio file into the system Downloads directory. [Hosted platform tests](https://github.com/AhmadMustafaElSaid/longwave/actions/runs/45156668531)
+
+## Earlier live-track environment
 
 The following observations were recorded on 2026-11-22–23 using Windows, Node.js 24.22.0, Python 3.15 and Edge 158.0.4370.33.
 
