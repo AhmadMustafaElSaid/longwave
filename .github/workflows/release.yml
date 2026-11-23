@@ -62,12 +62,15 @@ jobs:
           python scripts/package_unix.py --deb
           sudo apt-get install -y ./artifacts/releases/*/*.deb
           longwave --help
+          python scripts/test_unix_package.py --installed /usr/lib/longwave --chrome /opt/google/chrome/chrome
           python scripts/test_long_tracks.py --report artifacts/long-tracks-linux.json
       - name: Build and inspect macOS package
         if: runner.os == 'macOS'
         run: |
           python scripts/package_unix.py
           python scripts/package_macos.py
+          sudo installer -pkg artifacts/releases/*/*.pkg -target /
+          python scripts/test_unix_package.py --installed /usr/local/lib/longwave --chrome "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
       - name: Install, connect, update and disconnect the Unix archive
         if: runner.os != 'Windows'
         run: python scripts/test_unix_package.py

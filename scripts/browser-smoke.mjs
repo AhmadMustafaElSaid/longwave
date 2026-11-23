@@ -1,16 +1,26 @@
 import { chromium } from "playwright-core";
 import AxeBuilder from "@axe-core/playwright";
-import { readFile, mkdir, mkdtemp } from "node:fs/promises";
+import { readFile, readdir, mkdir, mkdtemp } from "node:fs/promises";
 import { resolve } from "node:path";
 const id = (await readFile("dist/extension-id.txt", "utf8")).trim();
 const extension = resolve(process.env.LONGWAVE_EXTENSION ?? "dist/chromium");
 await mkdir("artifacts", { recursive: true });
 await mkdir(".runtime", { recursive: true });
 // A fresh profile prevents Chromium from serving a previous build's cached worker.
-const profile = await mkdtemp(resolve(".runtime/browser-smoke-"));
+const profile =
+  process.env.LONGWAVE_TEST_PROFILE ?? (await mkdtemp(resolve(".runtime/browser-smoke-")));
+if (
+  process.env.LONGWAVE_TEST_PROFILE &&
+  (await readdir(profile)).some((entry) => entry !== "NativeMessagingHosts")
+) {
+  throw new Error(
+    "The browser test needs a fresh profile containing only the test native-host registration.",
+  );
+}
 const browserPath =
   process.env.LONGWAVE_BROWSER ?? "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
-const chromeBranded = browserPath.toLowerCase().endsWith("chrome.exe");
+const chromeBranded =
+  process.env.LONGWAVE_BRANDED_CHROME === "1" || browserPath.toLowerCase().endsWith("chrome.exe");
 const context = await chromium.launchPersistentContext(profile, {
   executablePath:
     process.env.LONGWAVE_BROWSER ?? "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
